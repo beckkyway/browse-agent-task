@@ -1,0 +1,33 @@
+# Environment
+.env
+
+# Browser session (contains cookies — don't commit)
+browser_profile/
+session.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+agent_history/

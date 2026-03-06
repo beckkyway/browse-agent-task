@@ -1,0 +1,4 @@
+browser-use==0.1.48
+langchain-openai
+python-dotenv
+playwright
