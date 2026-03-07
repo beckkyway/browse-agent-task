@@ -18,6 +18,9 @@ build/
 venv/
 env/
 
+# Claude Code local settings
+.claude/
+
 # IDE
 .vscode/
 .idea/
