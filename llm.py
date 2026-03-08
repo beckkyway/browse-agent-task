@@ -45,10 +45,19 @@ def get_llm(model: str = None, temperature: float = 0):
 
 def get_dom_subagent_llm():
     """Лёгкий LLM для DOM Sub-agent — анализ конкретных вопросов про страницу."""
+    openrouter_key = os.getenv("OPENROUTER_API_KEY")
     google_key = os.getenv("GOOGLE_API_KEY")
     openai_key = os.getenv("OPENAI_API_KEY")
 
-    if google_key:
+    if openrouter_key:
+        from langchain_openai import ChatOpenAI
+        return ChatOpenAI(
+            model="google/gemini-2.0-flash-001",
+            temperature=0,
+            api_key=openrouter_key,
+            base_url="https://openrouter.ai/api/v1",
+        )
+    elif google_key:
         from langchain_google_genai import ChatGoogleGenerativeAI
         return ChatGoogleGenerativeAI(
             model="gemini-2.0-flash",
@@ -63,7 +72,7 @@ def get_dom_subagent_llm():
             api_key=openai_key,
         )
     else:
-        raise ValueError("Не найден ни GOOGLE_API_KEY, ни OPENAI_API_KEY в .env")
+        raise ValueError("Не найден ни OPENROUTER_API_KEY, ни GOOGLE_API_KEY, ни OPENAI_API_KEY в .env")
 
 
 async def ask_about_dom(query: str, dom: str) -> str:

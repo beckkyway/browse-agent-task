@@ -6,33 +6,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from browser import SESSION_FILE, create_browser
+from browser import create_browser
 from agent import create_agent, make_step_hooks
 from context import ContextManager
 from tools import build_controller
-
-
-async def save_session_via_login() -> None:
-    """Open browser for manual login, then save session to SESSION_FILE."""
-    import json
-    from playwright.async_api import async_playwright
-
-    print('\nСессия не найдена. Открываю браузер для входа...')
-    print('Войдите на нужные сайты, затем нажмите Enter в этом терминале.')
-
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False)
-        context = await browser.new_context()
-        page = await context.new_page()
-        await page.goto('about:blank')
-        input('\nНажмите Enter когда закончите вход...')
-        # browser-use cookies_file expects a plain cookies array, not storage_state dict
-        cookies = await context.cookies()
-        with open(SESSION_FILE, 'w') as f:
-            json.dump(cookies, f)
-        await browser.close()
-
-    print(f'Сессия сохранена: {SESSION_FILE}\n')
 
 
 DESTRUCTIVE_TASK_KEYWORDS = [
@@ -61,7 +38,8 @@ async def run_task(task: str, controller, browser_context) -> None:
             return
 
     ctx = ContextManager(task)
-    agent = create_agent(task, controller, browser_context)
+    task_ru = task + "\n\n[ВАЖНО: все твои ответы, Memory, Eval, Next goal и done text — только на русском языке]"
+    agent = create_agent(task_ru, controller, browser_context)
     on_step_start, on_step_end = make_step_hooks(ctx)
     max_steps = int(os.getenv('MAX_STEPS', '50'))
     history = await agent.run(
@@ -83,13 +61,13 @@ async def run_task(task: str, controller, browser_context) -> None:
 async def main() -> None:
     os.makedirs('browser_profile', exist_ok=True)
 
-    if not os.path.exists(SESSION_FILE):
-        await save_session_via_login()
-
     controller = build_controller()
     browser = create_browser()
     browser_context = await browser.new_context()
-    print('Браузер запущен. Введите задачу или "выход" для завершения.\n')
+    print('Введите любую задачу — браузер откроется автоматически.')
+    print('После этого вы сможете войти в нужные учётки и работать с агентом.')
+    print('Сессия сохраняется и восстанавливается при следующем запуске.')
+    print('Введите "выход" для завершения.\n')
 
     first_task = ' '.join(sys.argv[1:]).strip()
 

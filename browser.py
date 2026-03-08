@@ -9,13 +9,12 @@ SESSION_FILE = os.path.join('browser_profile', 'session.json')
 
 def create_browser() -> Browser:
     """Create browser with persistent session and browser-use default timings."""
-    session_exists = os.path.exists(SESSION_FILE)
     return Browser(config=BrowserConfig(
         headless=False,
         keep_alive=True,
         new_context_config=BrowserContextConfig(
             keep_alive=True,
-            cookies_file=SESSION_FILE if session_exists else None,
+            cookies_file=SESSION_FILE,
             highlight_elements=True,
             # Using browser-use defaults (fast):
             # wait_between_actions=0.5

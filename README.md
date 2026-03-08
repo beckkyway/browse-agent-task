@@ -5,27 +5,32 @@
 ## Установка
 
 ```bash
-cd agent
+python3.11 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 playwright install chromium
 cp .env.example .env
-# Вставить OPENAI_API_KEY (или OPENROUTER_API_KEY / GOOGLE_API_KEY) в .env
+# Вставить один из ключей в .env: OPENROUTER_API_KEY, GOOGLE_API_KEY или OPENAI_API_KEY
 ```
 
 ## Запуск
 
 ```bash
+source venv/bin/activate
 python main.py
 ```
 
-При первом запуске откроется браузер — войдите на нужные сайты вручную, затем нажмите Enter. Сессия сохранится в `browser_profile/session.json` и будет автоматически восстанавливаться при следующих запусках.
+При запуске введите любую задачу — браузер откроется автоматически. После этого войдите в нужные учётки и продолжайте работу. Сессия (cookies) сохраняется автоматически в `browser_profile/session.json` и восстанавливается при следующих запусках.
 
-## Поддерживаемые модели
+## Поддерживаемые провайдеры (приоритет)
 
-Агент работает с любой моделью через LangChain:
-- **OpenAI** — GPT-4o, GPT-4o-mini (основная конфигурация)
-- **OpenRouter** — бесплатные и платные модели (укажи `OPENROUTER_API_KEY`)
-- **Google Gemini** — через `langchain-google-genai` (укажи `GOOGLE_API_KEY`)
+Агент выбирает провайдер автоматически по наличию ключа в `.env`:
+
+1. **OpenRouter** (`OPENROUTER_API_KEY`) — бесплатные модели, рекомендуется. Получить ключ: https://openrouter.ai/keys
+2. **Google Gemini** (`GOOGLE_API_KEY`) — бесплатный тариф
+3. **OpenAI** (`OPENAI_API_KEY`) — GPT-4o, платный
+
+По умолчанию используется `google/gemini-2.0-flash-001` через OpenRouter.
 
 Один запрос потребляет в среднем **30 000 – 50 000 токенов** в зависимости от сложности задачи.
 
@@ -45,9 +50,9 @@ python main.py
 | Файл | Описание |
 |------|----------|
 | `main.py` | Точка входа, REPL-цикл, управление сессией |
-| `agent.py` | Фабрика `browser_use.Agent` с GPT-4o + lifecycle hooks |
-| `browser.py` | `BrowserManager` с persistent sessions через `cookies_file` |
-| `llm.py` | Инициализация LLM и DOM Sub-agent (GPT-4o / GPT-4o-mini) |
+| `agent.py` | Фабрика `browser_use.Agent` + lifecycle hooks |
+| `browser.py` | Создание браузера с persistent sessions через `cookies_file` |
+| `llm.py` | Инициализация LLM: OpenRouter / Gemini / OpenAI |
 | `context.py` | `ContextManager` — история шагов, сжатие токенов, трекинг ошибок |
 | `security.py` | Детекция опасных URL + `is_destructive_url()` |
 | `recovery.py` | Логирование recovery + подсказки при застревании |
