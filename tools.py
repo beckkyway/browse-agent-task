@@ -1,6 +1,7 @@
 from browser_use.controller.service import Controller
 from browser_use.agent.views import ActionResult
 from browser_use.browser.context import BrowserSession
+from llm import ask_about_dom
 
 
 def build_controller() -> Controller:
@@ -37,6 +38,17 @@ def build_controller() -> Controller:
             error='Действие отклонено пользователем',
             include_in_memory=True,
         )
+
+    @controller.registry.action(
+        'Задать конкретный вопрос про элементы на текущей странице. '
+        'Используй когда нужно найти элемент, проверить наличие кнопки или поля, '
+        'не загружая весь DOM в основной контекст.'
+    )
+    async def ask_dom(question: str, browser: BrowserSession) -> ActionResult:
+        page = await browser.get_current_page()
+        dom = await page.evaluate('() => document.body.innerText')
+        answer = await ask_about_dom(question, dom[:8000])
+        return ActionResult(extracted_content=answer, include_in_memory=True)
 
     @controller.registry.action(
         'Проверить что товар добавлен в корзину и убедиться что не добавлен лишний товар. '
